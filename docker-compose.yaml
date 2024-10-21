@@ -1,0 +1,33 @@
+services:
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    
+    env_file: ./.env
+    
+    volumes:
+      - C:\minio\data:/data
+    
+    command: server data --console-address ":9001"
+
+  initialize-minio:
+    image: quay.io/minio/mc
+    container_name: miniomc
+    
+    depends_on:
+      - minio
+    
+    entrypoint: >
+      /bin/sh -c '
+      /usr/bin/mc alias set myminio http://localhost:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}";
+      /usr/bin/mc mb myminio/"$${BRONZE_BUCKET}";
+      /usr/bin/mc mb myminio/"$${SILVER_BUCKET}";
+      /usr/bin/mc mb myminio/"$${GOLD_BUCKET}";
+      exit 0;
+      '
+
+    env_file: ./.env
