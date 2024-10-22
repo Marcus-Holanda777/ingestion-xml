@@ -2,6 +2,7 @@ import pyarrow as pa
 import pandas as pd
 import pyarrow.parquet as pq
 import os
+import boto3
 
 
 class Write:
@@ -9,7 +10,7 @@ class Write:
         self, 
         data: pd.DataFrame | pa.Table,
         bucket_name: str,
-        client
+        client: boto3.client
     ) -> None:
         
         self.data = data
@@ -18,16 +19,15 @@ class Write:
 
     def write_parquet_buffer(
         self,
-        key: str, 
+        key: str,
         compression: str= 'snappy'
     ) -> None:
         
-        table = self.data
         if isinstance(self.data, pd.DataFrame):
-           table = pa.Table.from_pandas(self.data)
+           self.data = pa.Table.from_pandas(self.data)
         
         buffer = pa.BufferOutputStream()
-        pq.write_table(table, buffer, compression=compression)
+        pq.write_table(self.data, buffer, compression=compression)
 
         out_key = os.path.splitext(key)[0] + '.parquet'
 

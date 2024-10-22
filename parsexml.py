@@ -82,7 +82,7 @@ class ParseXml:
     def ___header_note(self) -> dict:
         map_cab = {
             'chave': ('infNFe/@Id', lambda x: str.strip(x[3:])),
-            'dhEmi': ('infNFe/ide/dhEmi', lambda x: parse(x[:10]).date()),
+            'dh_emi': ('infNFe/ide/dhEmi', lambda x: parse(x[:10]).date()),
             'cnpj_origem': ('infNFe/emit/CNPJ', str),
             'cnpj_destino': ('infNFe/dest/CNPJ', str),
             'natureza_operacao': ('infNFe/ide/natOp', str),
