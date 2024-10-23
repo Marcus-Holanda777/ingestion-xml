@@ -56,10 +56,14 @@ O objetivo deste projeto de engenharia de dados é extrair informações em form
 
 # Resultados
 
-## Armazenamento MinIO
+### Armazenamento MinIO
 
 ![alt text for screen readers](img/rst_minio.png)
 
-## Consulta SQL Duckdb e DBeaver
+---
+
+### Consulta SQL Duckdb e DBeaver
 
 ![alt text for screen readers](img/rst_dbeaver.png)
+
+---
