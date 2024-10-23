@@ -25,7 +25,7 @@ O objetivo deste projeto de engenharia de dados é extrair informações em form
 - **Silver**: Dados transformados e limpos (Parquet).
 - **Gold**: Dados agrupados e prontos para análise (Delta Lake).
 
-### 1. **Camada Bronze**
+1. **Camada Bronze**
 - **Descrição**: Nesta camada, os dados são armazenados em seu formato bruto, exatamente como foram extraídos da fonte (SQL Server, no caso). Não são realizadas transformações ou limpezas significativas.
 - **Objetivo**: Manter um histórico fiel dos dados originais, preservando a integridade dos dados brutos para permitir rastreamento de qualquer erro ou mudança.
 - **Formato**: Arquivos XML no MinIO.
