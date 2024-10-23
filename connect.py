@@ -56,6 +56,6 @@ def iter_notes(
 
     with do_connect(DRIVER) as cursor:
         cursor.execute(query.format(**params))
-
+        
         for row in cursor:
             yield row

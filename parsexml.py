@@ -72,6 +72,17 @@ class ParseXml:
         self.namespace = namespace
         self.root = self.__get_root()
 
+    def clear_string(self, txt: Any) -> Any:
+        if txt is None:
+            return txt
+        
+        if not isinstance(txt, str):
+            return txt
+        
+        comp = normalize('NFD', txt)
+        comp = ''.join(c for c in comp if not combining(c))
+        return normalize('NFC', comp).strip()
+
     def __get_root(self):
         root = ET.parse(self.xml)
         for elm in root.iter():
@@ -140,7 +151,7 @@ class ParseXml:
                     else:
                         data[key] = func(elm.text)
     
-            yield data
+            yield {k:self.clear_string(v) for k, v in data.items()}
 
     def records(self) -> list[dict[str, Any]]:
         return self.__detail_note()
