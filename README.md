@@ -19,3 +19,15 @@ O objetivo deste projeto de engenharia de dados é extrair informações em form
 | **Docker**        | Gerenciamento de contêineres para garantir ambiente isolado  |
 | **DuckDB**        | Consultar e ler dados de tabelas Delta localmente            |
 | **DBeaver**       | Editor SQL para consultas e manipulação de dados             |
+
+### Estrutura de Dados no MinIO
+- **Bronze**: Dados brutos extraídos do SQL Server (XML).
+- **Silver**: Dados transformados e limpos (Parquet).
+- **Gold**: Dados agrupados e prontos para análise (Delta Lake).
+
+### 1. **Camada Bronze**
+- **Descrição**: Nesta camada, os dados são armazenados em seu formato bruto, exatamente como foram extraídos da fonte (SQL Server, no caso). Não são realizadas transformações ou limpezas significativas.
+- **Objetivo**: Manter um histórico fiel dos dados originais, preservando a integridade dos dados brutos para permitir rastreamento de qualquer erro ou mudança.
+- **Formato**: Arquivos XML no MinIO.
+- **Exemplo**: 
+
