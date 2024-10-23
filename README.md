@@ -28,7 +28,7 @@ O objetivo deste projeto de engenharia de dados é extrair informações em form
    - **Formato**: Arquivos XML no MinIO.
    - **Exemplo**: 
      ```
-     s3://bronze/dados_extracao/<data>/dados.xml
+     s3://bronze/<controle>/<ano>/<mes>/<dia>/chave_de_acesso_nota.xml
      ```
 
 2. **Camada Silver**
@@ -37,19 +37,29 @@ O objetivo deste projeto de engenharia de dados é extrair informações em form
    - **Formato**: Arquivos Parquet no MinIO.
    - **Exemplo**: 
      ```
-     s3://silver/dados_limpos/<data>/dados.parquet
+     s3://bronze/<controle>/<ano>/<mes>/<dia>/chave_de_acesso_nota.parquet
      ```
 
 3. **Camada Gold**
-   - **Descrição**: A camada Gold é onde os dados são agregados, otimizados e preparados para consultas analíticas avançadas e relatórios. Nesta camada, aplicamos agregações, cálculos e geramos insights.
+   - **Descrição**: A camada Gold é onde os dados são agrupados, consolidados e otimizados para consultas analíticas avançadas e relatórios.
    - **Objetivo**: Entregar dados prontos para consumo por ferramentas de BI e dashboards.
    - **Formato**: Delta Lake no MinIO, com suporte a transações ACID e versionamento dos dados.
    - **Exemplo**:
      ```
-     s3://gold/delta_lake/dados_analiticos/
+     s3://gold/notas_fiscais/
      ```
 
 ### Estrutura de Dados no MinIO
 - **Bronze**: Dados brutos extraídos do SQL Server (XML).
 - **Silver**: Dados transformados e limpos (Parquet).
-- **Gold**: Dados agregados e prontos para análise (Delta Lake).
+- **Gold**: Dados consolidados e pronto para análise (Delta Lake).
+
+# Resultados
+
+### Armazenamento MinIO
+
+![alt text for screen readers](img/rst_minio.png)
+
+### Consulta SQL a tabela delta com duckdb no editor DBeaver
+
+![alt text for screen readers](img/rst_dbeaver.png)
