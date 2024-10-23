@@ -67,3 +67,7 @@ O objetivo deste projeto de engenharia de dados é extrair informações em form
 ![alt text for screen readers](img/rst_dbeaver.png)
 
 ---
+
+# Conclusão
+
+Este projeto não apenas consolidou meus conhecimentos em engenharia de dados, mas também me preparou para enfrentar desafios futuros na área, sempre buscando inovações que melhorem a gestão e a análise de dados.
