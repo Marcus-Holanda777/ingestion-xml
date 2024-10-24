@@ -1,6 +1,7 @@
 from deltalake import write_deltalake
 import pyarrow.parquet as pq
 import pyarrow.fs as fs
+from schemas.notas import schema_nota
 
 
 class WriteDelta:
@@ -33,6 +34,7 @@ class WriteDelta:
 
         dataset = pq.ParquetDataset(
             f'{bucket_name}/{self.controle}',
+            schema=schema_nota,
             filesystem=system_s3
         )
 
@@ -57,7 +59,8 @@ class WriteDelta:
         write_deltalake(
             f's3://{bucket_name}/{table_name}',
             data,
-            schema=data.schema,
+            schema=schema_nota,
             storage_options=storage_options,
-            mode="overwrite"
+            mode="overwrite",
+            partition_by=['controle', 'year', 'month']
         )

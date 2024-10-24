@@ -26,9 +26,9 @@ if __name__ == '__main__':
     )
 
     # TODO: Download da string do xml
-    start = datetime(2024, 1, 1)
-    end = datetime(2024, 10, 23)
+    start = datetime(2024, 10, 1)
+    end = datetime(2024, 10, 24)
 
-    insert_bronze_layer(['INCINERACAO', 'ESTORNO-INCINERACAO'], start, end, False, **creds)
+    # insert_bronze_layer(['INCINERACAO', 'ESTORNO-INCINERACAO'], start, end, True, **creds)
     insert_silver_layer(**creds)
     insert_gold_layer('INCINERACAO', 'notas', **creds)

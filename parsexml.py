@@ -93,7 +93,7 @@ class ParseXml:
     def ___header_note(self) -> dict:
         map_cab = {
             'chave': ('infNFe/@Id', lambda x: str.strip(x[3:])),
-            'dh_emi': ('infNFe/ide/dhEmi', lambda x: parse(x[:10]).date()),
+            'dh_emi': ('infNFe/ide/dhEmi', lambda x: parse(x[:10])),
             'cnpj_origem': ('infNFe/emit/CNPJ', str),
             'cnpj_destino': ('infNFe/dest/CNPJ', str),
             'natureza_operacao': ('infNFe/ide/natOp', str),
@@ -132,7 +132,11 @@ class ParseXml:
             'vBC': ('vl_base_icms', float),
             'pICMS': ('perc_icms', float),
             'vICMS': ('vl_icms', float),
-            'orig': ('orig', int)
+            'orig': ('orig', int),
+            'nLote': ('lote', str),
+            'qLote': ('qtd_lote', lambda x: int(float(x))),
+            'dFab': ('dt_fab', lambda x: parse(x)),
+            'dVal': ('dt_val', lambda x: parse(x))
         }
    
         for child in self.root.findall('infNFe/det'):
