@@ -37,7 +37,7 @@ O objetivo deste projeto de engenharia de dados é extrair informações em form
    - **Formato**: Arquivos Parquet no MinIO.
    - **Exemplo**: 
      ```
-     s3://bronze/<controle>/<ano>/<mes>/<dia>/chave_de_acesso_nota.parquet
+     s3://silver/<controle>/<ano>/<mes>/<dia>/chave_de_acesso_nota.parquet
      ```
 
 3. **Camada Gold**

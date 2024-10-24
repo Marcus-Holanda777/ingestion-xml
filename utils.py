@@ -135,14 +135,27 @@ def insert_silver_layer(
 
 
 def insert_gold_layer(
-    controle: str,
     table_name: str,
     **creds
 ) -> None:
     
     logging.info(f'Start create delta table: {table_name}')
     
-    delta = WriteDelta(controle, **creds)
+    delta = WriteDelta(**creds)
     delta.delta_write(table_name=table_name)
 
     logging.info(f'End create delta table: {table_name}')
+
+
+def merge_gold_layer(
+    prefixs: list[str],
+    table_name: str,
+    **creds
+) -> None:
+    
+    logging.info(f'Start MERGE delta table: {table_name}')
+    
+    delta = WriteDelta(**creds)
+    delta.delta_merge(prefixs, table_name=table_name)
+
+    logging.info(f'End MERGE delta table: {table_name}')
