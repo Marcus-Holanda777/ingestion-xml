@@ -11,6 +11,7 @@ import os
 import pyarrow as pa
 import pandas as pd
 from io import BytesIO
+import re
 
 
 class FileXml:
@@ -64,10 +65,12 @@ class FileXml:
 class ParseXml:
     def __init__(
         self, 
+        controle: str,
         xml: str | Path | BytesIO, 
         namespace: str = '{http://www.portalfiscal.inf.br/nfe}'
     ) -> None:
         
+        self.controle = controle
         self.xml = xml
         self.namespace = namespace
         self.root = self.__get_root()
@@ -81,7 +84,9 @@ class ParseXml:
         
         comp = normalize('NFD', txt)
         comp = ''.join(c for c in comp if not combining(c))
-        return normalize('NFC', comp).strip()
+        comp = normalize('NFC', comp)
+
+        return re.sub(r" +", " ", comp).strip().upper()
 
     def __get_root(self):
         root = ET.parse(self.xml)
@@ -99,10 +104,15 @@ class ParseXml:
             'natureza_operacao': ('infNFe/ide/natOp', str),
             'numero_nota': ('infNFe/ide/nNF', int),
             'valor_nota': ('infNFe/total//vNF', float),
-            'valor_base_icms': ('infNFe/total//vBC', float),
+            'valor_prod': ('infNFe/total//vProd', float),
+            'valor_desc': ('infNFe/total//vDesc', float),
+            'valor_base_calculo': ('infNFe/total//vBC', float),
             'valor_icms': ('infNFe/total//vICMS', float),
+            'valor_ipi': ('infNFe/total//vIPI', float),
+            'valor_pis': ('infNFe/total//vPIS', float),
+            'valor_cofins': ('infNFe/total//vCOFINS', float),
             'serie': ('infNFe/ide/serie', int),
-            'chave_estorno': ('infNFe/ide//refNFe', str)
+            'ref_chave': ('infNFe/ide//refNFe', str)
         }
 
         output = dict()
@@ -111,6 +121,9 @@ class ParseXml:
             expr, func = value
 
             if (search := self.root.xpath(expr)):
+                if key == 'ref_chave' and not self.controle.lower().startswith('estorno'):
+                   continue
+                
                 [tag] = search
                 output[key] = func(getattr(tag, 'text', tag))
         
@@ -128,10 +141,16 @@ class ParseXml:
             'qCom': ('qtd', lambda x: int(float(x))),
             'vUnCom': ('vl_unit', float),
             'vDesc': ('vl_desc', float),
-            'vProd': ('vl_total', float),
-            'vBC': ('vl_base_icms', float),
+            'vProd': ('vl_prod', float),
+            'vBC': ('vl_base', float),
             'pICMS': ('perc_icms', float),
             'vICMS': ('vl_icms', float),
+            'pIPI': ('perc_ipi', float),
+            'vIPI': ('vl_ipi', float),
+            'pPIS': ('perc_pis', float),
+            'vPIS': ('vl_pis', float),
+            'pCOFINS': ('perc_cofins', float),
+            'vCOFINS': ('vl_cofins', float),
             'orig': ('orig', int),
             'nLote': ('lote', str),
             'qLote': ('qtd_lote', lambda x: int(float(x))),
@@ -151,7 +170,17 @@ class ParseXml:
     
                     if elm.tag == 'vBC':
                         if elm.getparent().getparent().tag == 'ICMS':
-                            data[key] = func(elm.text)
+                            data[f'{key}_icms'] = func(elm.text)
+
+                        if elm.getparent().getparent().tag == 'IPI':
+                            data[f'{key}_ipi'] = func(elm.text)
+
+                        if elm.getparent().getparent().tag == 'PIS':
+                            data[f'{key}_pis'] = func(elm.text)
+                        
+                        if elm.getparent().getparent().tag == 'COFINS':
+                            data[f'{key}_cofins'] = func(elm.text)
+
                     else:
                         data[key] = func(elm.text)
     

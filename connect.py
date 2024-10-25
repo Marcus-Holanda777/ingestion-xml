@@ -38,7 +38,8 @@ def iter_notes(
     *,
     tips: list[str],
     start: datetime,
-    end: datetime
+    end: datetime,
+    font: str = 'dbnfe'
 ):
     DRIVER = (
         'Driver={ODBC Driver 18 for Sql Server};'
@@ -52,7 +53,8 @@ def iter_notes(
     params = {
         'tips': ','.join(f'{c!r}' for c in tips),
         'start': start,
-        'end': end
+        'end': end,
+        'font': font
     }
 
     with do_connect(DRIVER) as cursor:

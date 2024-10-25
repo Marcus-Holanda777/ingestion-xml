@@ -26,6 +26,7 @@ def main_etl(
     end: datetime,
     table_name: str = 'notas',
     lazy: bool = True,
+    font: str = 'dbnfe',
     dml: Literal['create', 'merge'] = 'create'
 ):
     creds = dict(
@@ -35,10 +36,11 @@ def main_etl(
     )
 
     prefixs = insert_bronze_layer(
-        tips, 
-        start, 
+        tips,
+        start,
         end, 
-        lazy, 
+        lazy,
+        font,
         **creds
     )
 
@@ -55,16 +57,13 @@ def main_etl(
 if __name__ == '__main__':
     main_etl(
         tips=[
-            'DEVOL-CD-FORN', 
-            'DEVOL-CD-FORNECEDOR', 
-            'ESTORNO-DEVOL-CD-FORN', 
-            'ESTORNO-DEVOL-CD-FORNECEDOR',
-            'INCINERACAO',
-            'ESTORNO-INCINERACAO'
+           'INCINERACAO',
+           'ESTORNO-INCINERACAO'
         ],
-        start=datetime(2024, 4, 1),
-        end=datetime(2024, 4, 30),
+        start=datetime(2024, 10, 20),
+        end=datetime(2024, 10, 25),
         table_name='notas',
-        lazy=True,
-        dml='create'
+        lazy=False,
+        font='dbnfe',
+        dml='merge'
     )

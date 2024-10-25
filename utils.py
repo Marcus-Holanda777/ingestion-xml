@@ -11,6 +11,8 @@ from datetime import datetime
 import logging
 import io
 from typing import Any
+from concurrent.futures import ThreadPoolExecutor
+import os
 
 
 def get_client_s3(
@@ -37,37 +39,41 @@ def insert_bronze_layer(
     start: datetime,
     end: datetime,
     lazy: bool,
+    font: str,
     **creds
 ) -> list[str]:
     
     client = get_client_s3(**creds)
 
+    # TODO: Inserir os dados na base
+    def create_file_note(data: tuple) -> str:
+        file = FileXml(*data)
+        file_to, file_bytes = file.export_file_xml()
+        client.put_object(
+            Body=file_bytes, 
+            Bucket='bronze',
+            Key=file_to
+        )
+        logging.info(f'Item: {data[1]}, {data[3]}')
+        
+        return file_to
+
     gen_notes = iter_notes(
         tips=tips,
         start=start,
-        end=end
+        end=end,
+        font=font
     )
 
     if not lazy:
         logging.info('Not lazy !')
         gen_notes = list(gen_notes)
-
         logging.info(f'Total: {len(gen_notes)}')
-    
-    list_keys = []
-    for p, data in enumerate(gen_notes, 1):
-        file = FileXml(*data)
-        file_to, file_bytes = file.export_file_xml()
-        client.put_object(
-            Body=file_bytes, 
-            Bucket='bronze', 
-            Key=file_to
-        )
 
-        logging.info(f'Item: {p}, {data[1]}, {data[3]}')
-        list_keys.append(file_to)
-    
-    return list_keys
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        list_keys = executor.map(create_file_note, gen_notes)
+
+    return list(list_keys)
 
 
 def insert_silver_layer(
@@ -77,33 +83,34 @@ def insert_silver_layer(
     
     client = get_client_s3(**creds)
 
-    def data_insert(response):
-        for object_key in response:
-            # NOTE: Ler objeto xml em memoria
-            key = object_key['Key'] if isinstance(object_key, dict) else object_key 
-            file_obj = client.get_object(Bucket='bronze', Key=key)
-            conteudo = file_obj['Body'].read()
-            conteudo_bytes = io.BytesIO(conteudo)
+    def inner_insert(object_key):
+        # NOTE: Ler objeto xml em memoria
+        key = object_key['Key'] if isinstance(object_key, dict) else object_key 
+        file_obj = client.get_object(Bucket='bronze', Key=key)
+        conteudo = file_obj['Body'].read()
+        conteudo_bytes = io.BytesIO(conteudo)
             
-            try:
-                # NOTE: Exportar xml camada silver
-                controle, *__, name = key.split('/')
-                file_xml = ParseXml(conteudo_bytes)
-                data = (
-                    file_xml.df()
-                    .assign(
-                        controle = controle.strip().lower(),
-                        status = int(name.split('_')[1]),
-                        year = lambda _df: _df.dh_emi.dt.year,
-                        month = lambda _df: _df.dh_emi.dt.month
-                    )
-                )
-                write_silver = Write(data, 'silver', client)
-                write_silver.write_parquet_buffer(key)
-                logging.info(f'{key=}')
-            except Exception:
-                logging.warning(f'{key=}')
-                continue
+        # NOTE: Exportar xml camada silver
+        controle, *__, name = key.split('/')
+        file_xml = ParseXml(controle, conteudo_bytes)
+        data = (
+            file_xml.df()
+            .assign(
+                controle = controle.strip().lower(),
+                status = int(name.split('_')[1]),
+                year = lambda _df: _df.dh_emi.dt.year,
+                month = lambda _df: _df.dh_emi.dt.month
+            )
+        )
+        write_silver = Write(data, 'silver', client)
+        write_silver.write_parquet_buffer(key)
+        logging.info(f'{key=}')
+            
+
+    def data_insert(response):
+        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+            rst = executor.map(inner_insert, response)
+        return rst
     
     if all(
        [
