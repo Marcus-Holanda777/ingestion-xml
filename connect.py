@@ -19,6 +19,7 @@ def do_connect(*args, **kwargs):
         pyodbc.SQL_TXN_READ_UNCOMMITTED
     )
 
+    con.autocommit = False
     cursor = con.cursor()
 
     try:

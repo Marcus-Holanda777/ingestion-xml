@@ -58,11 +58,13 @@ if __name__ == '__main__':
             'DEVOL-CD-FORN', 
             'DEVOL-CD-FORNECEDOR', 
             'ESTORNO-DEVOL-CD-FORN', 
-            'ESTORNO-DEVOL-CD-FORNECEDOR'
+            'ESTORNO-DEVOL-CD-FORNECEDOR',
+            'INCINERACAO',
+            'ESTORNO-INCINERACAO'
         ],
-        start=datetime(2024, 10, 1),
-        end=datetime(2024, 10, 24),
+        start=datetime(2024, 4, 1),
+        end=datetime(2024, 4, 30),
         table_name='notas',
         lazy=True,
-        dml='merge'
+        dml='create'
     )

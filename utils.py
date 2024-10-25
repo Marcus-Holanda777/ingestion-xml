@@ -64,7 +64,7 @@ def insert_bronze_layer(
             Key=file_to
         )
 
-        logging.info(f'Item: {p}, {data[1]}')
+        logging.info(f'Item: {p}, {data[1]}, {data[3]}')
         list_keys.append(file_to)
     
     return list_keys
@@ -84,22 +84,26 @@ def insert_silver_layer(
             file_obj = client.get_object(Bucket='bronze', Key=key)
             conteudo = file_obj['Body'].read()
             conteudo_bytes = io.BytesIO(conteudo)
-                    
-            # NOTE: Exportar xml camada silver
-            controle, *__, name = key.split('/')
-            file_xml = ParseXml(conteudo_bytes)
-            data = (
-                file_xml.df()
-                .assign(
-                    controle = controle.strip().lower(),
-                    status = int(name.split('_')[1]),
-                    year = lambda _df: _df.dh_emi.dt.year,
-                    month = lambda _df: _df.dh_emi.dt.month
+            
+            try:
+                # NOTE: Exportar xml camada silver
+                controle, *__, name = key.split('/')
+                file_xml = ParseXml(conteudo_bytes)
+                data = (
+                    file_xml.df()
+                    .assign(
+                        controle = controle.strip().lower(),
+                        status = int(name.split('_')[1]),
+                        year = lambda _df: _df.dh_emi.dt.year,
+                        month = lambda _df: _df.dh_emi.dt.month
+                    )
                 )
-            )
-            write_silver = Write(data, 'silver', client)
-            write_silver.write_parquet_buffer(key)
-            logging.info(f'{key=}')
+                write_silver = Write(data, 'silver', client)
+                write_silver.write_parquet_buffer(key)
+                logging.info(f'{key=}')
+            except Exception:
+                logging.warning(f'{key=}')
+                continue
     
     if all(
        [
