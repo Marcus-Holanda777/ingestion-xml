@@ -10,7 +10,10 @@ from botocore.exceptions import ClientError
 from datetime import datetime
 import logging
 import io
-from typing import Any
+from typing import (
+    Any,
+    Generator
+)
 from concurrent.futures import ThreadPoolExecutor
 import os
 
@@ -32,6 +35,36 @@ def get_client_s3(
      raise
   else:
      return client
+
+
+def list_objects_bucket(
+    client: Any,
+    bucket_name: str,
+    prefixs: str = None
+) -> Generator[Any, Any, None]:
+    
+    kwargs = {
+        'Bucket': bucket_name
+    }
+    
+    if prefixs is not None:
+        kwargs['Prefix'] = prefixs
+
+    while True:
+        response = client.list_objects_v2(**kwargs)
+        if 'Contents' in response:
+            match response:
+                case {'Contents': data}:
+                    yield from (obj['Key'] for obj in data)
+
+            token = response.get('NextContinuationToken', None)
+            if token is None:
+                break
+
+            kwargs['ContinuationToken'] = token
+
+        else:
+            break
 
 
 def insert_bronze_layer(
@@ -122,38 +155,20 @@ def insert_silver_layer(
         data_insert(prefixs)
 
     else:
-        kwargs = {
-            'Bucket': 'bronze'
-        }
-    
-        if prefixs is not None:
-            kwargs['Prefix'] = prefixs
-
-        while True:
-            response = client.list_objects_v2(**kwargs)
-            if 'Contents' in response:
-                data_insert(response['Contents'])
-                
-                token = response.get('NextContinuationToken', None)
-                logging.info(f'Is token: {token}')
-
-                if token is None:
-                    break
-                kwargs['ContinuationToken'] = token
-
-            else:
-                break
+        response = list_objects_bucket(client, 'bronze')
+        data_insert(response)
 
 
 def insert_gold_layer(
     table_name: str,
+    prefixs: list[str],
     **creds
 ) -> None:
     
     logging.info(f'Start create delta table: {table_name}')
     
     delta = WriteDelta(**creds)
-    delta.delta_write(table_name=table_name)
+    delta.delta_write(table_name=table_name, prefixs=prefixs)
 
     logging.info(f'End create delta table: {table_name}')
 

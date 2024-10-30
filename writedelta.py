@@ -36,7 +36,9 @@ class WriteDelta:
             endpoint_override=self.endpoint_url,
             access_key=self.aws_access_key_id,
             secret_key=self.aws_secret_access_key,
-            request_timeout=7200
+            retry_strategy=fs.AwsStandardS3RetryStrategy(max_attempts=20),
+            request_timeout=3600, 
+            connect_timeout=3600
         )
     
     def read_parquet(
@@ -66,9 +68,11 @@ class WriteDelta:
     def delta_write(
         self,
         bucket_name: str = 'gold',
-        table_name: str = 'notas'
+        table_name: str = 'notas',
+        prefixs: list[str] = []
     ):
-        data = self.read_parquet()
+        
+        data = self.read_parquet(prefixs)
 
         write_deltalake(
             f's3://{bucket_name}/{table_name}',
