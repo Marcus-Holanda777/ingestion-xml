@@ -5,9 +5,7 @@ from utils import (
     insert_bronze_layer, 
     insert_silver_layer, 
     insert_gold_layer,
-    merge_gold_layer,
-    get_client_s3,
-    list_objects_bucket
+    merge_gold_layer
 )
 import logging
 from typing import Literal
